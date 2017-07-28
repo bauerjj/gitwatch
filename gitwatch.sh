@@ -32,8 +32,8 @@
 #   and will abort if either command (or `which`) is not found.
 #
 
-REMOTE=""
-BRANCH=""
+REMOTE="origin"
+BRANCH="gh-pages"
 SLEEP_TIME=2
 DATE_FMT="+%Y-%m-%d %H:%M:%S"
 COMMITMSG="Scripted auto-commit on change (%d) by gitwatch.sh"
@@ -178,7 +178,24 @@ while true; do
     cd $TARGETDIR # CD into right dir
     $GIT add $GIT_ADD_ARGS # add file(s) to index
     $GIT commit $GIT_COMMIT_ARGS -m"$FORMATTED_COMMITMSG" # construct commit message and commit
-
+ 
     if [ -n "$PUSH_CMD" ]; then $PUSH_CMD; fi
+
+	#JJB Add commands to build the gh-pages branch, then copy the _site contents to the production
+    # folder, replace the back slashes, and then push it to the master branch
+
+	cd $TARGETDIR # CD into right dir
+	JEKYLL_ENV=production bundle exec jekyll build # build it with PRODUCTION settings
+    
+    if [ $? -ne 0 ]; then exit; fi # exit it on an error
+    cp replace.sh _site
+    ./_site/replace.sh # omit the slashes
+
+    cp -R _site/* ../production
+    cd ../production #move into the production directory
+    $GIT add $GIT_ADD_ARGS
+    $GIT commit $GIT_COMMIT_ARGS -m"$FORMATTED_COMMITMSG" # construct commit message and commit
+    $GIT push origin master # push to the MASTER
+
 done
 
