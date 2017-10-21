@@ -193,6 +193,7 @@ while true; do
 
     cp -R _site/* ../production
     cd ../production #move into the production directory
+	$GIT pull #get the latest
     $GIT add $GIT_ADD_ARGS
     $GIT commit $GIT_COMMIT_ARGS -m"$FORMATTED_COMMITMSG" # construct commit message and commit
     $GIT push origin master # push to the MASTER
